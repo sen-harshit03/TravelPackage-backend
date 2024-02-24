@@ -1,0 +1,14 @@
+server:
+  port: 9090
+
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/travelbookdb
+    username: root
+    password: charas1807
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    database-platform: org.hibernate.dialect.MySQLDialect
+    hibernate:
+      ddl-auto: update
+    show_sql: true

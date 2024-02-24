@@ -1,0 +1,13 @@
+--CREATE TABLE IF NOT EXISTS destinations (
+--    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+--    name VARCHAR(255) NOT NULL
+--);
+--
+--CREATE TABLE IF NOT EXISTS activities (
+--    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+--    name VARCHAR(255) NOT NULL,
+--    description VARCHAR(1000),
+--    cost DECIMAL(10, 2),
+--    destination_id BIGINT,
+--    FOREIGN KEY (destination_id) REFERENCES destinations(id)
+--);
