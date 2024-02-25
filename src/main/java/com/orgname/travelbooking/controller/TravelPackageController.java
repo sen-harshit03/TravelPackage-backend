@@ -7,6 +7,7 @@ import com.orgname.travelbooking.dto.ResponseDto;
 import com.orgname.travelbooking.dto.TravelPackageRequest;
 import com.orgname.travelbooking.entities.TravelPackage;
 import com.orgname.travelbooking.service.TravelPackageService;
+import com.orgname.travelbooking.utils.Serializer;
 import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -23,27 +24,15 @@ import java.util.Set;
 @RestController
 @RequestMapping("/api/package")
 @RequiredArgsConstructor
-@CrossOrigin("*")
+@CrossOrigin(origins = "*")
 public class TravelPackageController {
 
     private final TravelPackageService travelPackageService;
 
-
     @PostMapping(path = "/create", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
-    public ResponseEntity<ResponseDto> createTravelPackage(@RequestParam("files") MultipartFile[] files, @RequestParam String travelPackageRequestJson) {
-        System.out.println(files.length);
+    public ResponseEntity<ResponseDto> createTravelPackage(@RequestParam("files") MultipartFile[] files, @RequestParam("travelPackageRequestJson") String travelPackageRequestJson) {
 
-        ObjectMapper objectMapper = new ObjectMapper();
-        TravelPackageRequest travelPackageRequest;
-        try {
-            travelPackageRequest = objectMapper.readValue(travelPackageRequestJson, TravelPackageRequest.class);
-        } catch (JsonMappingException e) {
-            throw new RuntimeException(e);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
-//        TravelPackageRequest request = new TravelPackageRequest("Fuddi", 12, Set.of("Fuddi"), BigDecimal.valueOf(450));
-        travelPackageService.createTravelPackage(travelPackageRequest);
+        travelPackageService.createTravelPackage(files, travelPackageRequestJson);
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(new ResponseDto(String.valueOf(HttpStatus.CREATED), "Travel Package Created Successfully"));

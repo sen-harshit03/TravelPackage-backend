@@ -1,5 +1,7 @@
 package com.orgname.travelbooking.service.impl;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.orgname.travelbooking.dto.TravelPackageRequest;
 import com.orgname.travelbooking.entities.Destination;
 import com.orgname.travelbooking.entities.TravelPackage;
@@ -10,8 +12,11 @@ import com.orgname.travelbooking.service.TravelPackageService;
 import com.orgname.travelbooking.utils.Mapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+import software.amazon.awssdk.services.s3.S3Client;
 
 
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -24,10 +29,16 @@ public class TravelPackageServiceImpl implements TravelPackageService {
     private final TravelPackageRepository travelPackageRepository;
     private final DestinationRepository destinationRepository;
     private final Mapper mapper;
+    private final ObjectMapper objectMapper;
+    private final S3Service s3Service;
+
 
 
     @Override
-    public void createTravelPackage(final TravelPackageRequest travelPackageRequest) {
+    public void createTravelPackage(final MultipartFile[] files, final String travelPackageRequestJson) {
+        System.out.println(files.length);
+        final TravelPackageRequest travelPackageRequest = convertStringToObject(travelPackageRequestJson, TravelPackageRequest.class);
+
         final Optional<TravelPackage> optionalTravelPackage =
                 travelPackageRepository.findByName(travelPackageRequest.name());
         if(optionalTravelPackage.isPresent()) {
@@ -38,12 +49,14 @@ public class TravelPackageServiceImpl implements TravelPackageService {
 
         final Set<Destination> destinationSet = getDestinationsByName(travelPackageRequest.destinationNames());
         destinationSet.stream().forEach(d -> System.out.println(d.getName()));
-        // Handled at frontend
-//        if(destinationSet.size() != travelPackageRequest.destinationsNames().size()) throw Exception("Dsd");
 
         final TravelPackage travelPackage = mapper.mapToTravelPackage(travelPackageRequest, destinationSet);
         final TravelPackage savedTravelPackage = travelPackageRepository.save(travelPackage);
-//        updateDestinationsWithTravelPackage(destinationSet, savedTravelPackage);
+        try {
+            s3Service.uploadImage(savedTravelPackage.getId(), savedTravelPackage.getName(), files);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
 
@@ -59,6 +72,15 @@ public class TravelPackageServiceImpl implements TravelPackageService {
         List<Destination> destinationList = destinationRepository.findByNameIn(destinationsNames);
         Set<Destination> destinationSet = new HashSet<>(destinationList);
         return destinationSet;
+    }
+
+
+    private TravelPackageRequest convertStringToObject(final String stringValue, final Class<TravelPackageRequest> classType) {
+        try {
+            return objectMapper.readValue(stringValue, classType);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
 
