@@ -1,14 +1,17 @@
 package com.orgname.travelbooking.dto;
 
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Set;
 
+
 public record TravelPackageRequest(
         String name,
         Integer duration,
-        Set<String> destinationsNames,
+        Set<String> destinationNames,
         BigDecimal price
 ) {
 }

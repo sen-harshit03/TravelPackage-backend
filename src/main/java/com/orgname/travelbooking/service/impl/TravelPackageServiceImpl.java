@@ -36,7 +36,7 @@ public class TravelPackageServiceImpl implements TravelPackageService {
             );
         }
 
-        final Set<Destination> destinationSet = getDestinationsByName(travelPackageRequest.destinationsNames());
+        final Set<Destination> destinationSet = getDestinationsByName(travelPackageRequest.destinationNames());
         destinationSet.stream().forEach(d -> System.out.println(d.getName()));
         // Handled at frontend
 //        if(destinationSet.size() != travelPackageRequest.destinationsNames().size()) throw Exception("Dsd");
