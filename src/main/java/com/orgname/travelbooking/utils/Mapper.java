@@ -3,12 +3,14 @@ package com.orgname.travelbooking.utils;
 import com.orgname.travelbooking.dto.BookingRequest;
 import com.orgname.travelbooking.dto.DestinationRequest;
 import com.orgname.travelbooking.dto.TravelPackageRequest;
+import com.orgname.travelbooking.dto.TravelPackageResponse;
 import com.orgname.travelbooking.entities.Booking;
 import com.orgname.travelbooking.entities.Destination;
 import com.orgname.travelbooking.entities.TravelPackage;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Set;
 
 
@@ -33,6 +35,20 @@ public class Mapper {
                 .destinations(destinationSet)
                 .build();
         return travelPackage;
+    }
+
+
+    public TravelPackageResponse mapToTravelPackageResponse(final TravelPackage travelPackage, final List<byte[]> images) {
+        final TravelPackageResponse travelPackageResponse = new TravelPackageResponse(
+                travelPackage.getId(),
+                travelPackage.getName(),
+                travelPackage.getDuration(),
+                travelPackage.getPrice(),
+                travelPackage.getDestinations(),
+                images
+        );
+
+        return travelPackageResponse;
     }
 
     public Booking mapToBooking(final BookingRequest bookingRequest) {

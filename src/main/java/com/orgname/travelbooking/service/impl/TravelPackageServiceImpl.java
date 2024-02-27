@@ -3,6 +3,7 @@ package com.orgname.travelbooking.service.impl;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.orgname.travelbooking.dto.TravelPackageRequest;
+import com.orgname.travelbooking.dto.TravelPackageResponse;
 import com.orgname.travelbooking.entities.Destination;
 import com.orgname.travelbooking.entities.TravelPackage;
 import com.orgname.travelbooking.exceptions.ResourceAlreadyExistsException;
@@ -13,14 +14,12 @@ import com.orgname.travelbooking.utils.Mapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.GetObjectResponse;
+import software.amazon.awssdk.services.s3.model.S3Object;
 
 
 import java.io.IOException;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -62,15 +61,17 @@ public class TravelPackageServiceImpl implements TravelPackageService {
 
 
     @Override
-    public List<TravelPackage> fetchAllTravelPackages() {
-        List<TravelPackage> travelPackages = travelPackageRepository.findAll();
-        return travelPackages;
+    public List<TravelPackageResponse> fetchAllTravelPackages() {
+        final List<TravelPackage> travelPackages = travelPackageRepository.findAll();
+        final List<TravelPackageResponse> travelPackageResponses = getTravelPackagesResponses(travelPackages);
+        return travelPackageResponses;
     }
 
 
+
     private Set<Destination> getDestinationsByName(final Set<String> destinationsNames) {
-        List<Destination> destinationList = destinationRepository.findByNameIn(destinationsNames);
-        Set<Destination> destinationSet = new HashSet<>(destinationList);
+        final List<Destination> destinationList = destinationRepository.findByNameIn(destinationsNames);
+        final Set<Destination> destinationSet = new HashSet<>(destinationList);
         return destinationSet;
     }
 
@@ -82,6 +83,28 @@ public class TravelPackageServiceImpl implements TravelPackageService {
             throw new RuntimeException(e);
         }
     }
+
+
+    private List<TravelPackageResponse> getTravelPackagesResponses(final List<TravelPackage> travelPackages) {
+        final List<TravelPackageResponse> travelPackageResponses = new ArrayList<>();
+        travelPackages
+                .forEach(travelPackage -> {
+                    final List<S3Object> s3Objects = s3Service.getObjectList(travelPackage.getId(), travelPackage.getName());
+                    final List<byte[]> images = new ArrayList<>();
+                    s3Objects.forEach(
+                            s3Object -> {
+                                final String key = s3Object.key();
+                                final byte[] imageBytes = s3Service.getObject(key);
+                                images.add(imageBytes);
+                            }
+                    );
+                    final TravelPackageResponse travelPackageResponse = mapper.mapToTravelPackageResponse(travelPackage, images);
+                    travelPackageResponses.add(travelPackageResponse);
+                });
+        return travelPackageResponses;
+    }
+
+
 }
 
 

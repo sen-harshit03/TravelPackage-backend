@@ -7,6 +7,8 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
+import software.amazon.awssdk.awscore.exception.AwsServiceException;
+import software.amazon.awssdk.services.s3.model.S3Exception;
 
 import java.time.LocalDateTime;
 
@@ -35,10 +37,9 @@ public class GlobalExceptionalHandler extends ResponseEntityExceptionHandler {
         ErrorResponse response = ErrorResponse.builder()
                 .path(webRequest.getDescription(false))
                 .errorMessage(exception.getMessage())
-                .errorCode(HttpStatus.BAD_REQUEST)
+                .errorCode(HttpStatus.NOT_FOUND)
                 .errorTime(LocalDateTime.now())
                 .build();
-
         return ResponseEntity
                 .status(HttpStatus.NOT_FOUND)
                 .body(response);
@@ -56,6 +57,36 @@ public class GlobalExceptionalHandler extends ResponseEntityExceptionHandler {
 
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
+                .body(response);
+    }
+
+    @ExceptionHandler(S3Exception.class)
+    public ResponseEntity<ErrorResponse> handleS3Exception(
+            final WebRequest webRequest, final Exception exception ) {
+        ErrorResponse response = ErrorResponse.builder()
+                .path(webRequest.getDescription(false))
+                .errorMessage(exception.getMessage())
+                .errorCode(HttpStatus.INTERNAL_SERVER_ERROR)
+                .errorTime(LocalDateTime.now())
+                .build();
+
+        return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(response);
+    }
+
+    @ExceptionHandler(AwsServiceException.class)
+    public ResponseEntity<ErrorResponse> handleAwsServiceException(
+            final WebRequest webRequest, final Exception exception ) {
+        ErrorResponse response = ErrorResponse.builder()
+                .path(webRequest.getDescription(false))
+                .errorMessage(exception.getMessage())
+                .errorCode(HttpStatus.INTERNAL_SERVER_ERROR)
+                .errorTime(LocalDateTime.now())
+                .build();
+
+        return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(response);
     }
 }

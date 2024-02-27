@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.orgname.travelbooking.dto.ResponseDto;
 import com.orgname.travelbooking.dto.TravelPackageRequest;
+import com.orgname.travelbooking.dto.TravelPackageResponse;
 import com.orgname.travelbooking.entities.TravelPackage;
 import com.orgname.travelbooking.service.TravelPackageService;
 import com.orgname.travelbooking.utils.Serializer;
@@ -40,8 +41,8 @@ public class TravelPackageController {
 
 
     @GetMapping(path = "/fetchall")
-    public ResponseEntity<List<TravelPackage>> fetchAllTravelPackages() {
-        List<TravelPackage> travelPackages = travelPackageService.fetchAllTravelPackages();
+    public ResponseEntity<List<TravelPackageResponse>> fetchAllTravelPackages() {
+        List<TravelPackageResponse> travelPackages = travelPackageService.fetchAllTravelPackages();
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(travelPackages);
